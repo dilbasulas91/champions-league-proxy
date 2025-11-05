@@ -1,14 +1,15 @@
 {
   "name": "champions-league-proxy",
   "version": "1.0.0",
+  "description": "Champions League maçlarını almak için proxy sunucu",
   "main": "app.js",
   "type": "module",
-  "dependencies": {
-    "express": "^4.19.2",
-    "node-fetch": "^3.3.2",
-    "cors": "^2.8.5"
-  },
   "scripts": {
     "start": "node app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
   }
 }
