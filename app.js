@@ -1,30 +1,36 @@
 import express from "express";
-import fetch from "node-fetch";
+import axios from "axios";
 import cors from "cors";
 
 const app = express();
+const PORT = process.env.PORT || 10000;
+
 app.use(cors());
 
+// Futbol API URL’si (örnek: Premier League, Champions League vs.)
+const API_URL = "https://api.football-data.org/v4/competitions/CL/matches";
+
+// Render ortam değişkeninden API anahtarı al (Render’da ekleyeceğiz)
+const API_KEY = process.env.FOOTBALL_API_KEY;
+
+// Ana endpoint
 app.get("/matches", async (req, res) => {
   try {
-    const response = await fetch("https://api.football-data.org/v4/competitions/CL/matches", {
-      headers: { "X-Auth-Token": "b834adbcb96e47edac2a752fb8d2ac73" }
+    const response = await axios.get(API_URL, {
+      headers: { "X-Auth-Token": API_KEY },
     });
-
-    if (!response.ok) {
-      return res.status(response.status).json({ error: "API isteği başarısız oldu" });
-    }
-
-    const data = await response.json();
-    res.json(data);
+    res.json(response.data);
   } catch (error) {
-    res.status(500).json({ error: "Sunucu hatası", details: error.message });
+    console.error("❌ API isteği hatası:", error.message);
+    res.status(500).json({ error: "API isteği başarısız" });
   }
 });
 
+// Test rotası (sunucu çalışıyor mu görmek için)
 app.get("/", (req, res) => {
-  res.send("🏆 Champions League Proxy Çalışıyor! /matches adresine gidin ⚽");
+  res.send("✅ Proxy çalışıyor! /matches endpoint'ini deneyin.");
 });
 
-const port = process.env.PORT || 10000;
-app.listen(port, () => console.log(`✅ Proxy ${port} portunda çalışıyor!`));
+app.listen(PORT, () => {
+  console.log(`✅ Proxy ${PORT} portunda çalışıyor!`);
+});
