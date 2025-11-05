@@ -1,36 +1,39 @@
+// app.js
 import express from "express";
-import axios from "axios";
+import fetch from "node-fetch";
 import cors from "cors";
 
 const app = express();
-const PORT = process.env.PORT || 10000;
-
 app.use(cors());
 
-// Futbol API URL’si (örnek: Premier League, Champions League vs.)
-const API_URL = "https://api.football-data.org/v4/competitions/CL/matches";
+const PORT = process.env.PORT || 10000;
+const API_KEY = process.env.API_FOOTBALL_KEY; // Render ayarlarında ekleyeceğiz
 
-// Render ortam değişkeninden API anahtarı al (Render’da ekleyeceğiz)
-const API_KEY = process.env.FOOTBALL_API_KEY;
-
-// Ana endpoint
+// Bugünkü Şampiyonlar Ligi maçlarını getir
 app.get("/matches", async (req, res) => {
   try {
-    const response = await axios.get(API_URL, {
-      headers: { "X-Auth-Token": API_KEY },
+    const today = new Date().toISOString().split("T")[0];
+    const apiUrl = `https://v3.football.api-sports.io/fixtures?date=${today}&league=2&season=2025`; // 2 = Champions League
+
+    const response = await fetch(apiUrl, {
+      headers: {
+        "x-apisports-key": API_KEY,
+        "x-rapidapi-host": "v3.football.api-sports.io",
+      },
     });
-    res.json(response.data);
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("API hata:", text);
+      return res.status(response.status).json({ error: "API isteği başarısız" });
+    }
+
+    const data = await response.json();
+    res.json(data);
   } catch (error) {
-    console.error("❌ API isteği hatası:", error.message);
-    res.status(500).json({ error: "API isteği başarısız" });
+    console.error("❌ Hata:", error);
+    res.status(500).json({ error: "Sunucu hatası" });
   }
 });
 
-// Test rotası (sunucu çalışıyor mu görmek için)
-app.get("/", (req, res) => {
-  res.send("✅ Proxy çalışıyor! /matches endpoint'ini deneyin.");
-});
-
-app.listen(PORT, () => {
-  console.log(`✅ Proxy ${PORT} portunda çalışıyor!`);
-});
+app.listen(PORT, () => console.log(`✅ Proxy ${PORT} portunda çalışıyor!`));
